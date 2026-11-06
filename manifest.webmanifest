@@ -1,0 +1,9 @@
+{
+  "name": "せどり仕入れアシスタント v2.1",
+  "short_name": "せどりv2.1",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f3f5f9",
+  "theme_color": "#172554",
+  "lang": "ja"
+}

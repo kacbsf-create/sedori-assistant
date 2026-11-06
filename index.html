@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#172554">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="せどりv2">
+<link rel="manifest" href="manifest.webmanifest">
+<title>せどり仕入れアシスタント v2.1</title>
+<style>
+:root{--navy:#172554;--blue:#2563eb;--bg:#f3f5f9;--card:#fff;--text:#172033;--muted:#64748b;--line:#e2e8f0;--green:#15803d;--red:#b91c1c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;color:var(--text);padding-bottom:84px}
+header{background:var(--navy);color:white;padding:18px 16px 16px;position:sticky;top:0;z-index:5}header h1{font-size:18px;margin:0 0 4px}header p{font-size:12px;margin:0;color:#cbd5e1}
+main{max-width:760px;margin:auto;padding:14px}.tabs{display:flex;gap:8px;overflow:auto;margin-bottom:14px}.tab{border:1px solid var(--line);background:white;border-radius:999px;padding:10px 14px;white-space:nowrap;font-weight:650;color:var(--muted)}.tab.active{background:var(--navy);border-color:var(--navy);color:white}
+.panel{display:none}.panel.active{display:block}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:12px;box-shadow:0 2px 8px #0f172a08}
+h2{font-size:16px;margin:0 0 12px}.hint{font-size:12px;color:var(--muted);line-height:1.6}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{margin-bottom:11px}.field label{display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:5px}input,select,textarea{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;background:white;font-size:16px;color:var(--text);min-width:0}input[type=number]{font-variant-numeric:tabular-nums}button{border:0;border-radius:11px;padding:12px 14px;background:var(--blue);color:white;font-weight:700;font-size:14px;cursor:pointer}button.secondary{background:#eaf0ff;color:#1d4ed8}.photoBtn{display:inline-flex;flex:1;align-items:center;justify-content:center;border-radius:11px;padding:12px 14px;background:#2563eb;color:white;font-weight:700;font-size:14px;cursor:pointer}.photoBtn.secondary{background:#eaf0ff;color:#1d4ed8}button.dark{background:var(--navy)}button.danger{background:#fee2e2;color:var(--red)}button:disabled{opacity:.5}.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{flex:1}.result{background:#eff6ff;border:1px solid #bfdbfe;border-radius:14px;padding:14px;margin-top:8px}.profit{font-size:28px;font-weight:800;color:var(--green);font-variant-numeric:tabular-nums}.metric{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dashed #cbd5e1;font-size:13px}.metric:last-child{border:0}.pill{display:inline-block;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:800;background:#e2e8f0;color:#334155}.pill.good{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.bad{background:#fee2e2;color:#991b1b}
+.list-item{padding:12px 0;border-bottom:1px solid var(--line)}.list-item:last-child{border:0}.list-item strong{display:block;font-size:14px}.sub{font-size:12px;color:var(--muted);margin-top:4px}.empty{color:var(--muted);font-size:13px;text-align:center;padding:20px 8px}
+video{width:100%;border-radius:12px;background:#0f172a;max-height:280px;object-fit:cover}#cameraWrap{display:none;margin-top:10px}#photoPreview{max-width:100%;max-height:180px;border-radius:10px;display:none;margin-top:8px}
+footer{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;border-top:1px solid var(--line);padding:9px 14px calc(9px + env(safe-area-inset-bottom));font-size:11px;color:var(--muted);text-align:center;backdrop-filter:blur(8px)}
+.smallbtn{padding:8px 10px;font-size:12px}.totalgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.totalbox{background:#f8fafc;border-radius:12px;padding:12px}.totalbox span{font-size:11px;color:var(--muted)}.totalbox b{display:block;font-size:20px;margin-top:3px}
+@media(min-width:650px){main{padding:22px}.grid{grid-template-columns:repeat(3,1fr)}}
+.quick-card{border:2px solid #2563eb}.quick-card h2{margin-bottom:10px}
+@media(max-width:430px){.quick-card input,.quick-card select{font-size:18px;padding:13px}.quick-card button{font-size:15px;padding:14px}}
+</style>
+</head>
+<body>
+<header><h1>📦 せどり仕入れアシスタント v2.1</h1><p>店頭スピード重視｜JAN・利益・仕入れ判定を最短操作で</p></header>
+<main>
+<div class="tabs">
+<button class="tab active" data-tab="scan">商品チェック</button>
+<button class="tab" data-tab="inventory">仕入れリスト</button>
+<button class="tab" data-tab="dashboard">収支・設定</button>
+</div>
+
+<section id="scan" class="panel active">
+<div class="card quick-card">
+<h2>⚡ 店頭クイック判定</h2>
+<div class="grid">
+<div class="field"><label>仕入れ価格（円）</label><input id="quickBuy" type="number" inputmode="numeric" placeholder="例：3980"></div>
+<div class="field"><label>販売価格（円）</label><input id="quickSell" type="number" inputmode="numeric" placeholder="例：7980"></div>
+</div>
+<div class="grid">
+<div class="field"><label>販売手数料率</label><select id="quickFee"><option value="0.10">10%</option><option value="0.105">10.5%</option><option value="0.12">12%</option><option value="0.15">15%</option></select></div>
+<div class="field"><label>送料（円）</label><input id="quickShip" type="number" inputmode="numeric" value="750"></div>
+</div>
+<div class="actions"><button class="dark" onclick="quickCalc()">⚡ 即判定</button><button class="secondary" onclick="quickReset()">リセット</button></div>
+<div id="quickResult" class="result" style="display:none"></div>
+<p class="hint">販売価格 − 手数料 − 送料 − 仕入れ価格で概算利益を即時計算。店頭ではまずここだけ入力。</p>
+</div>
+
+<div class="card">
+<h2>① 商品を特定する</h2>
+<div class="actions">
+<button onclick="startCamera()">📷 バーコードをスキャン</button><label class="photoBtn secondary" for="barcodePhoto">📸 バーコードを撮影</label><input id="barcodePhoto" type="file" accept="image/*" capture="environment" hidden onchange="scanBarcodePhoto(event)">
+<label class="photoBtn" for="photo">📸 写真を撮る</label>
+<label class="photoBtn secondary" for="photoSelect">🖼️ 写真を選ぶ</label>
+<input id="photo" type="file" accept="image/*" capture="environment" onchange="previewPhoto(event)">
+<input id="photoSelect" type="file" accept="image/*" hidden onchange="previewPhoto(event)">
+</div>
+<div id="cameraWrap"><div id="reader"></div><div class="actions" style="margin-top:8px"><button class="secondary" onclick="stopCamera()">カメラ終了</button></div></div>
+<img id="photoPreview" alt="商品写真プレビュー">
+<p class="hint">iPhoneではHTTPS環境で「バーコードをスキャン」を使うと、カメラを向けたままJANを読み取れます。カメラが使えない場合は「バーコードを撮影」で写真から読み取れます。</p>
+<div class="field"><label>商品名・型番</label><input id="name" placeholder="例：Makita TD173D / Nintendo Switch"></div>
+<div class="grid">
+<div class="field"><label>JAN・バーコード</label><input id="jan" placeholder="バーコード番号"></div>
+<div class="field"><label>ジャンル</label><select id="category"><option>中古家電・ゲーム</option><option>工具・DIY</option><option>ホビー・おもちゃ</option><option>日用品・生活雑貨</option><option>その他</option></select></div>
+</div>
+<div class="field"><label>状態</label><select id="condition"><option>新品</option><option selected>中古・良好</option><option>中古・使用感あり</option><option>ジャンク・要修理</option></select></div>
+</div>
+
+<div class="card">
+<h2>② 販売相場を入力</h2>
+<p class="hint">Amazon・メルカリで商品名/JANを検索し、売れた実績を確認して入力。検索リンクは商品名を使って開きます。売却済み価格と現在の出品価格は区別してください。</p>
+<div class="field"><label>販売先</label><select id="market"><option>メルカリ</option><option>Amazon</option><option>両方を比較</option></select></div>
+<div class="grid">
+<div class="field"><label>想定販売価格（円）</label><input id="sell" type="number" min="0" inputmode="numeric" placeholder="例：6980"></div>
+<div class="field"><label>仕入れ価格（円）</label><input id="buy" type="number" min="0" inputmode="numeric" placeholder="例：3000"></div>
+<div class="field"><label>販売手数料率（%）</label><input id="feeRate" type="number" min="0" max="100" step=".1" value="10" inputmode="decimal"></div>
+<div class="field"><label>送料（円）</label><input id="shipping" type="number" min="0" value="750" inputmode="numeric"></div>
+<div class="field"><label>梱包・その他費用（円）</label><input id="other" type="number" min="0" value="100" inputmode="numeric"></div>
+<div class="field"><label>売れ行きの目安</label><select id="velocity"><option value="unknown">未確認</option><option value="fast">よく売れている</option><option value="mid">時々売れている</option><option value="slow">売却実績が少ない</option></select></div>
+</div>
+<div class="actions">
+<button class="secondary" onclick="searchMarket('mercari')">メルカリで検索</button>
+<button class="secondary" onclick="searchMarket('amazon')">Amazonで検索</button>
+</div>
+<div class="result">
+<div class="hint">想定手取り利益</div><div class="profit" id="profit">¥0</div>
+<div class="metric"><span>販売手数料</span><b id="feeAmount">¥0</b></div>
+<div class="metric"><span>利益率（売価比）</span><b id="margin">0.0%</b></div>
+<div class="metric"><span>投資利益率（仕入れ比）</span><b id="roi">0.0%</b></div>
+<div class="metric"><span>仕入れ判定</span><b id="decision"><span class="pill">価格を入力</span></b></div>
+<p class="hint" id="decisionReason">利益・利益率・売れ行きを見て判断します。相場価格は自動取得値ではなく、確認して入力した価格です。</p>
+</div>
+<div class="actions" style="margin-top:12px">
+<button class="dark" onclick="saveItem()">仕入れ候補に保存</button>
+<button class="secondary" onclick="clearForm()">入力クリア</button>
+</div>
+</div>
+</section>
+
+<section id="inventory" class="panel">
+<div class="card">
+<h2>仕入れ候補・購入商品</h2>
+<div class="totalgrid">
+<div class="totalbox"><span>登録件数</span><b id="itemCount">0件</b></div>
+<div class="totalbox"><span>仕入れ総額</span><b id="buyTotal">¥0</b></div>
+</div>
+<p class="hint">保存した商品はこの端末のブラウザ内に保存されます。購入後は「購入済み」、販売後は売却価格を登録してください。</p>
+<div id="itemList" class="empty">まだ商品がありません。</div>
+</div>
+</section>
+
+<section id="dashboard" class="panel">
+<div class="card">
+<h2>月間収支・資金管理</h2>
+<div class="grid">
+<div class="field"><label>初期予算（円）</label><input id="budget" type="number" value="50000" min="0" inputmode="numeric" onchange="saveSettings()"></div>
+<div class="field"><label>目標月間利益（円）</label><input id="target" type="number" value="50000" min="0" inputmode="numeric" onchange="saveSettings()"></div>
+</div>
+<div class="totalgrid">
+<div class="totalbox"><span>仕入れに使った金額</span><b id="spent">¥0</b></div>
+<div class="totalbox"><span>予算残高（概算）</span><b id="remaining">¥50,000</b></div>
+<div class="totalbox"><span>販売済み売上</span><b id="sales">¥0</b></div>
+<div class="totalbox"><span>販売済み利益</span><b id="realProfit">¥0</b></div>
+</div>
+<p class="hint">販売済み利益は、売却価格から仕入れ値・登録済み手数料・送料・その他費用を差し引いた概算です。税金、返品、保管料、交通費、通信費などは別途管理してください。</p>
+</div>
+<div class="card">
+<h2>データ管理</h2>
+<div class="actions"><button class="secondary" onclick="exportCSV()">CSVを書き出す</button><button class="danger" onclick="clearAll()">全データ削除</button></div>
+<p class="hint">機種変更・ブラウザデータ削除に備え、定期的にCSVを書き出してください。</p>
+</div>
+<div class="card">
+<h2>使い方・注意点</h2>
+<ul class="hint" style="padding-left:18px;line-height:1.8">
+<li>相場は「売却済み・成約実績」を優先して確認。出品中価格だけで仕入れない。</li>
+<li>Amazonの販売手数料はカテゴリー等で異なります。FBA利用時は配送代行手数料・保管料等も加算。</li>
+<li>メルカリの販売手数料・配送方法は最新条件を販売前に確認。</li>
+<li>中古品を継続的に仕入れて販売する場合、古物商許可が必要となるケースがあります。事前に管轄警察署へ確認。</li>
+<li>この試作版は外部サービスへ接続していません。価格の自動取得・画像からの商品特定は未実装です。</li>
+</ul>
+</div>
+</section>
+</main>
+<footer>v2.1｜データはこの端末のブラウザ内に保存｜カメラ機能はHTTPS環境で使用</footer>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));}</script>
+<script>
+const $=id=>document.getElementById(id);
+let items=JSON.parse(localStorage.getItem('resale_items_v1')||'[]');
+let html5Qr=null;
+const yen=n=>'¥'+Math.round(Number(n)||0).toLocaleString('ja-JP');
+function persist(){localStorage.setItem('resale_items_v1',JSON.stringify(items));render();}
+function val(id){return Number($(id).value)||0}
+function quickCalc(){
+ const b=Number($('quickBuy').value)||0,s=Number($('quickSell').value)||0,f=Number($('quickFee').value)||0,sh=Number($('quickShip').value)||0;
+ const fee=Math.round(s*f), profit=s-fee-sh-b, rate=b?profit/b*100:0;
+ const r=$('quickResult'); let cls=profit>=1500&&rate>=25?'good':profit>=800&&rate>=15?'warn':'bad';
+ const label=profit>=1500&&rate>=25?'🟢 仕入れ候補':profit>=800&&rate>=15?'🟡 慎重':'🔴 見送り';
+ r.style.display='block'; r.innerHTML=`<div style="font-size:14px;font-weight:800">${label}</div><div class="profit">¥${profit.toLocaleString()}</div><div class="metric"><span>利益率</span><b>${rate.toFixed(1)}%</b></div><div class="metric"><span>手数料</span><b>¥${fee.toLocaleString()}</b></div>`;
+}
+function quickReset(){['quickBuy','quickSell'].forEach(id=>$(id).value='');$('quickShip').value=750;$('quickResult').style.display='none';}
+function calc(){
+ const sell=val('sell'),buy=val('buy'),fee=sell*val('feeRate')/100,ship=val('shipping'),other=val('other');
+ const p=sell-buy-fee-ship-other, margin=sell?p/sell*100:0,roi=buy?p/buy*100:0;
+ $('profit').textContent=yen(p);$('feeAmount').textContent=yen(fee);$('margin').textContent=margin.toFixed(1)+'%';$('roi').textContent=roi.toFixed(1)+'%';
+ let label='価格を入力',cls='',reason='販売実績と回転率を確認してください。';
+ if(sell>0&&buy>0){
+  if(p>=2000&&margin>=25&&$('velocity').value==='fast'){label='積極的に仕入れ候補';cls='good';reason='利益額・利益率・売れ行きの条件を満たしています。'}
+  else if(p>=2000&&margin>=25){label='仕入れ候補';cls='good';reason='利益条件は良好。売却実績と販売までの日数を確認しましょう。'}
+  else if(p>=1000){label='条件次第';cls='warn';reason='送料変動・値下がり・売却期間を考慮して慎重に判断。'}
+  else{label='見送り推奨';cls='bad';reason='利益が小さい、または赤字です。'}
+  if($('velocity').value==='slow'&&p>0){label='慎重に判断';cls='warn';reason='売却実績が少ないため、資金が長期間拘束される可能性があります。'}
+ }
+ $('decision').innerHTML='<span class="pill '+cls+'">'+label+'</span>';$('decisionReason').textContent=reason;
+ return {sell,buy,fee,ship,other,profit:p,margin,roi};
+}
+['sell','buy','feeRate','shipping','other','velocity'].forEach(id=>$(id).addEventListener('input',calc));
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));if(b.dataset.tab==='inventory'||b.dataset.tab==='dashboard')render();}));
+function searchMarket(which){const q=encodeURIComponent(($('name').value||$('jan').value).trim());if(!q){alert('商品名またはJANを入力してください');return;}const url=which==='mercari'?'https://www.mercari.com/jp/search/?keyword='+q:'https://www.amazon.co.jp/s?k='+q;window.open(url,'_blank','noopener');}
+function saveItem(){
+ const c=calc(),name=$('name').value.trim();if(!name){alert('商品名・型番を入力してください');return;}if(!c.buy||!c.sell){alert('仕入れ価格と想定販売価格を入力してください');return;}
+ items.unshift({id:Date.now(),name,jan:$('jan').value,category:$('category').value,condition:$('condition').value,market:$('market').value,sell:c.sell,buy:c.buy,feeRate:val('feeRate'),shipping:c.ship,other:c.other,velocity:$('velocity').value,status:'候補',actualSell:0,created:new Date().toISOString()});persist();alert('仕入れ候補に保存しました');}
+function clearForm(){['name','jan','sell','buy'].forEach(id=>$(id).value='');$('feeRate').value=10;$('shipping').value=750;$('other').value=100;$('velocity').value='unknown';$('photoPreview').style.display='none';calc();}
+function render(){
+ $('itemCount').textContent=items.length+'件';$('buyTotal').textContent=yen(items.reduce((s,x)=>s+(x.status!=='候補'?x.buy:0),0));
+ const list=$('itemList');if(!items.length){list.className='empty';list.textContent='まだ商品がありません。';}
+ else{list.className='';list.innerHTML=items.map(x=>`<div class="list-item"><strong>${esc(x.name)} <span class="pill ${x.status==='販売済み'?'good':x.status==='購入済み'?'warn':''}">${x.status}</span></strong><div class="sub">${esc(x.category)}｜仕入 ${yen(x.buy)}｜想定売価 ${yen(x.sell)}｜想定利益 ${yen(x.sell-x.buy-x.sell*x.feeRate/100-x.shipping-x.other)}</div><div class="actions" style="margin-top:8px"><button class="secondary smallbtn" onclick="markBought(${x.id})">購入済みにする</button><button class="secondary smallbtn" onclick="markSold(${x.id})">販売登録</button><button class="danger smallbtn" onclick="removeItem(${x.id})">削除</button></div>${x.status==='販売済み'?`<div class="sub">実売 ${yen(x.actualSell)}｜実利益 ${yen(x.actualSell-x.buy-x.actualSell*x.feeRate/100-x.shipping-x.other)}</div>`:''}</div>`).join('');}
+ const spent=items.filter(x=>x.status!=='候補').reduce((s,x)=>s+x.buy,0),sold=items.filter(x=>x.status==='販売済み');
+ $('spent').textContent=yen(spent);$('remaining').textContent=yen(val('budget')-spent);$('sales').textContent=yen(sold.reduce((s,x)=>s+x.actualSell,0));$('realProfit').textContent=yen(sold.reduce((s,x)=>s+x.actualSell-x.buy-x.actualSell*x.feeRate/100-x.shipping-x.other,0));
+}
+function markBought(id){const x=items.find(x=>x.id===id);if(x){x.status='購入済み';persist();}}
+function markSold(id){const x=items.find(x=>x.id===id);if(!x)return;const v=prompt('実際の売却価格（円）を入力',String(x.sell));if(v===null)return;const n=Number(v);if(!(n>0)){alert('正しい金額を入力してください');return;}x.actualSell=n;x.status='販売済み';persist();}
+function removeItem(id){if(confirm('この商品を削除しますか？')){items=items.filter(x=>x.id!==id);persist();}}
+function saveSettings(){localStorage.setItem('resale_budget',val('budget'));localStorage.setItem('resale_target',val('target'));render();}
+function exportCSV(){if(!items.length){alert('書き出すデータがありません');return;}const rows=[['商品名','JAN','ジャンル','状態','ステータス','仕入価格','想定売価','実売価格','手数料率','送料','その他費用'],...items.map(x=>[x.name,x.jan,x.category,x.condition,x.status,x.buy,x.sell,x.actualSell,x.feeRate,x.shipping,x.other])];const csv='\uFEFF'+rows.map(r=>r.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='せどり仕入れデータ.csv';a.click();URL.revokeObjectURL(a.href);}
+function clearAll(){if(confirm('登録した全商品データを削除します。この操作は元に戻せません。')){items=[];persist();}}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function previewPhoto(e){const f=e.target.files[0];if(!f)return;const im=$('photoPreview');im.src=URL.createObjectURL(f);im.style.display='block';}
+async function startCamera(){
+ try{
+  if(typeof Html5Qrcode==='undefined'){alert('バーコード読取ライブラリを読み込めませんでした。インターネット接続を確認してください。');return;}
+  if(html5Qr){await stopCamera();}
+  html5Qr=new Html5Qrcode('reader');
+  $('cameraWrap').style.display='block';
+  await html5Qr.start(
+   {facingMode:'environment'},
+   {fps:10,qrbox:{width:280,height:140},formatsToSupport:[Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.UPC_A,Html5QrcodeSupportedFormats.UPC_E,Html5QrcodeSupportedFormats.CODE_128]},
+   decodedText=>{ $('jan').value=decodedText; navigator.vibrate?.(100); stopCamera(); },
+   ()=>{}
+  );
+ }catch(e){
+  $('cameraWrap').style.display='none';
+  alert('カメラ式のバーコード読取を開始できませんでした。iPhoneでは「バーコードを撮影」を使うと、写真からJANを読み取れます。
+
+HTTPS環境ではカメラ式も利用できます。');
+ }
+}
+async function stopCamera(){
+ try{if(html5Qr){await html5Qr.stop();html5Qr.clear();}}catch(e){}
+ html5Qr=null;$('cameraWrap').style.display='none';
+}
+async function scanBarcodePhoto(e){
+ const f=e.target.files?.[0]; if(!f)return;
+ try{
+  if(typeof Html5Qrcode==='undefined'){alert('バーコード読取ライブラリを読み込めませんでした。インターネット接続を確認してください。');return;}
+  const scanner=new Html5Qrcode('reader');
+  const result=await scanner.scanFile(f,true);
+  $('jan').value=result;
+  navigator.vibrate?.(100);
+  alert('JANコードを読み取りました：\n'+result);
+ }catch(e){
+  alert('バーコードを読み取れませんでした。バーコード全体が入るように、明るい場所で撮り直してください。');
+ }finally{e.target.value='';}
+}
+$('budget').value=localStorage.getItem('resale_budget')||50000;$('target').value=localStorage.getItem('resale_target')||50000;
+calc();render();
+</script>
+</body></html>
