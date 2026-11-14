@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="せどりv2.1">
 <link rel="manifest" href="./manifest.webmanifest">
-<title>せどり仕入れアシスタント v2.1</title>
+<title>せどり仕入れアシスタント v2.2.1</title>
 <style>
 :root{--navy:#172554;--blue:#2563eb;--bg:#f3f5f9;--card:#fff;--text:#172033;--muted:#64748b;--line:#e2e8f0;--green:#15803d;--red:#b91c1c}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;color:var(--text);padding-bottom:84px}
@@ -29,7 +29,7 @@ footer{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;border-top:1p
 </style>
 </head>
 <body>
-<header><h1>📦 せどり仕入れアシスタント v2.1</h1><p>店頭スピード重視｜JAN・利益・仕入れ判定</p></header>
+<header><h1>📦 せどり仕入れアシスタント v2.2.1</h1><p>店頭スピード重視｜JAN・利益・仕入れ判定</p></header>
 <main>
 <div class="tabs">
 <button class="tab active" data-tab="scan">商品チェック</button>
@@ -120,7 +120,7 @@ footer{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;border-top:1p
 <div class="card"><h2>使い方・注意点</h2><ul class="hint" style="padding-left:18px;line-height:1.8"><li>相場は売却済み・成約実績を優先。</li><li>Amazon・メルカリの手数料等は販売前に最新条件を確認。</li><li>中古品を継続的に仕入れて販売する場合、古物商許可が必要となるケースがあります。</li><li>この版は価格の自動取得・画像からの商品特定は未実装です。</li></ul></div>
 </section>
 </main>
-<footer>v2.1｜データはこの端末のブラウザ内に保存</footer>
+<footer>v2.2.1 高速バーコード｜データはこの端末のブラウザ内に保存</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
@@ -159,8 +159,8 @@ async function startCamera(){
   await stopCamera();
   html5Qr=new Html5Qrcode('reader', {verbose:false});
   $('cameraWrap').style.display='block';
-  const config={fps:20,qrbox:{width:320,height:110},aspectRatio:1.7777778,disableFlip:true,formatsToSupport:[Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.UPC_A,Html5QrcodeSupportedFormats.UPC_E]};
-  await html5Qr.start({facingMode:'environment',width:{ideal:1280},height:{ideal:720}},config,(decodedText)=>{if(decodedText && !scanLocked){scanLocked=true;$('jan').value=decodedText;setStatus('✅ バーコードを読み取りました：'+decodedText,'ok');navigator.vibrate?.(100);stopCamera() }},()=>{});
+  const config={fps:15,qrbox:{width:320,height:110},aspectRatio:1.7777778,disableFlip:true,formatsToSupport:[Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.UPC_A,Html5QrcodeSupportedFormats.UPC_E]};
+  await html5Qr.start({facingMode:'environment'},config,(decodedText)=>{if(decodedText && !scanLocked){scanLocked=true;$('jan').value=decodedText;setStatus('✅ バーコードを読み取りました：'+decodedText,'ok');navigator.vibrate?.(100);stopCamera() }},()=>{});
   setStatus('📷 高速スキャン中。バーコードを枠内に入れてください。');
  }catch(err){
   console.error(err);
