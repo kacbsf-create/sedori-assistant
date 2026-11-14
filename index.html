@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="せどりv2">
-<title>せどり仕入れアシスタント v2.2.5</title>
+<title>せどり仕入れアシスタント v2.3.1</title>
 <style>
 :root{--navy:#172554;--blue:#2563eb;--bg:#f3f5f9;--card:#fff;--text:#172033;--muted:#64748b;--line:#e2e8f0;--green:#15803d;--red:#b91c1c}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;color:var(--text);padding-bottom:84px}
@@ -241,25 +241,47 @@ function prepareBarcodeImage(file,maxSide=1800){
 async function lookupProductByJan(jan){
  const box=$('productLookup');
  box.style.display='block';
- box.innerHTML='<div class="hint">🔎 JANから商品情報を検索中…</div>';
+ box.innerHTML='<div class="hint">🔎 JANから商品名を検索中…</div>';
  const clean=String(jan||'').replace(/\D/g,'');
  if(!/^(?:\d{8}|\d{12,13})$/.test(clean)){box.innerHTML='<div class="hint">JANの桁数を確認してください。</div>';return;}
+
+ // ① 商品名DB：ProductGuru（無料・APIキー不要・ブラウザから利用可能）
  try{
-  const url='https://jan2asin.kozo.info/api/search?jan='+encodeURIComponent(clean);
+  const url='https://myproduct.guru/lookup/'+encodeURIComponent(clean)+'.json';
   const res=await fetch(url,{headers:{'Accept':'application/json'}});
   if(res.ok){
    const data=await res.json();
-   const item=data?.product||data?.data||data?.results?.[0]||data?.[0]||data;
-   const name=item?.name||item?.product_name||item?.title||item?.productName;
-   const maker=item?.maker||item?.brand||item?.manufacturer;
+   const item=data?.product||data?.data||data?.item||data;
+   const name=item?.name||item?.product_name||item?.productName||item?.title||data?.name||data?.product_name||data?.productName||data?.title;
+   const maker=item?.brand||item?.manufacturer||item?.maker||data?.brand||data?.manufacturer||data?.maker;
+   const category=item?.category||data?.category;
    if(name){
     $('name').value=name;
-    box.innerHTML='<div style="font-size:13px;font-weight:800">✅ 商品情報を取得しました</div><div class="metric"><span>商品名</span><b>'+esc(name)+'</b></div>'+(maker?'<div class="metric"><span>メーカー/ブランド</span><b>'+esc(maker)+'</b></div>':'');
+    box.innerHTML='<div style="font-size:13px;font-weight:800">✅ 商品名を自動取得しました</div><div class="metric"><span>商品名</span><b>'+esc(name)+'</b></div>'
+      +(maker?'<div class="metric"><span>メーカー/ブランド</span><b>'+esc(maker)+'</b></div>':'')
+      +(category?'<div class="metric"><span>カテゴリ</span><b>'+esc(category)+'</b></div>':'')
+      +'<div class="hint" style="margin-top:6px">商品情報：ProductGuru</div>';
     return;
    }
   }
  }catch(_){ }
- box.innerHTML='<div style="font-size:13px;font-weight:800">ℹ️ 自動取得できませんでした</div><div class="hint">このJANは商品DBに未登録、またはAPIが利用できません。検索ボタンから商品を確認できます。</div><div class="actions" style="margin-top:8px"><button class="secondary smallbtn" type="button" onclick="searchJanWeb()">Google検索</button><button class="secondary smallbtn" type="button" onclick="searchMarket(&quot;amazon&quot;)">Amazon検索</button></div>';
+
+ // ② JAN→ASIN：商品DBに無い場合でもASINを取得してAmazon確認へつなぐ
+ try{
+  const url='https://jan2asin.kozo.info/api/v1/jan/'+encodeURIComponent(clean);
+  const res=await fetch(url,{headers:{'Accept':'application/json'}});
+  if(res.ok){
+   const data=await res.json();
+   const asins=Array.isArray(data?.asin)?data.asin:(data?.asin?[data.asin]:[]);
+   if(data?.found && asins.length){
+    const asin=String(asins[0]);
+    box.innerHTML='<div style="font-size:13px;font-weight:800">ℹ️ 商品名DBでは未取得ですが、Amazon商品を特定できました</div><div class="metric"><span>ASIN</span><b>'+esc(asin)+'</b></div><div class="hint">Amazonで商品名を確認できます。</div><div class="actions" style="margin-top:8px"><button class="secondary smallbtn" type="button" onclick="window.open(\'https://www.amazon.co.jp/dp/'+encodeURIComponent(asin)+'\',\'_blank\',\'noopener\')">Amazon商品ページ</button><button class="secondary smallbtn" type="button" onclick="searchJanWeb()">Google検索</button></div>';
+    return;
+   }
+  }
+ }catch(_){ }
+
+ box.innerHTML='<div style="font-size:13px;font-weight:800">ℹ️ 自動取得できませんでした</div><div class="hint">このJANの商品名DBに登録がないか、外部APIへ接続できませんでした。JAN検索から確認できます。</div><div class="actions" style="margin-top:8px"><button class="secondary smallbtn" type="button" onclick="searchJanWeb()">Google検索</button><button class="secondary smallbtn" type="button" onclick="searchMarket(&quot;amazon&quot;)">Amazon検索</button></div>';
 }
 function searchJanWeb(){const q=encodeURIComponent($('jan').value.trim());if(q)window.open('https://www.google.com/search?q='+q,'_blank','noopener');}
 
