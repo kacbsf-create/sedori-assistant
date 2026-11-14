@@ -59,8 +59,8 @@ footer{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;border-top:1p
 <input id="photoSelect" type="file" accept="image/*" hidden onchange="previewPhoto(event)">
 </div>
 <img id="photoPreview" alt="商品写真プレビュー">
-<p class="hint">iPhoneでは「バーコードを撮影してJAN読取」を使用します。ライブカメラ方式は使わず、撮影した写真からJANを読み取ります。</p>
-<div class="field"><label>商品名・型番</label><input id="name" placeholder="例：Makita TD173D / Nintendo Switch"></div>
+<p class="hint">iPhoneでは「バーコードを撮影してJAN読取」を使用します。JANを読み取ると商品名候補を自動検索します。</p>
+<div class="field"><label>商品名・型番</label><input id="name" placeholder="JAN読み取り後に自動入力されます。必要なら手入力も可"></div><div id="productLookup" class="result" style="display:none;margin-top:8px"></div>
 <div class="grid">
 <div class="field"><label>JAN・バーコード</label><input id="jan" placeholder="バーコード番号"></div>
 <div class="field"><label>ジャンル</label><select id="category"><option>中古家電・ゲーム</option><option>工具・DIY</option><option>ホビー・おもちゃ</option><option>日用品・生活雑貨</option><option>その他</option></select></div>
@@ -82,7 +82,7 @@ footer{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;border-top:1p
 </div>
 <div class="actions">
 <button class="secondary" onclick="searchMarket('mercari')">メルカリで検索</button>
-<button class="secondary" onclick="searchMarket('amazon')">Amazonで検索</button>
+<button class="secondary" onclick="searchMarket(&quot;amazon&quot;)">Amazonで検索</button>
 </div>
 <div class="result">
 <div class="hint">想定手取り利益</div><div class="profit" id="profit">¥0</div>
@@ -143,7 +143,7 @@ footer{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;border-top:1p
 </div>
 </section>
 </main>
-<footer>v2.2.5 撮影専用JAN｜データはこの端末のブラウザ内に保存｜相場価格・手数料は入力値です</footer>
+<footer>v2.3.0 JAN商品名自動取得｜データはこの端末のブラウザ内に保存｜相場価格・手数料は入力値です</footer>
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
 const $=id=>document.getElementById(id);
@@ -238,6 +238,31 @@ function prepareBarcodeImage(file,maxSide=1800){
  });
 }
 
+async function lookupProductByJan(jan){
+ const box=$('productLookup');
+ box.style.display='block';
+ box.innerHTML='<div class="hint">🔎 JANから商品情報を検索中…</div>';
+ const clean=String(jan||'').replace(/\D/g,'');
+ if(!/^(?:\d{8}|\d{12,13})$/.test(clean)){box.innerHTML='<div class="hint">JANの桁数を確認してください。</div>';return;}
+ try{
+  const url='https://jan2asin.kozo.info/api/search?jan='+encodeURIComponent(clean);
+  const res=await fetch(url,{headers:{'Accept':'application/json'}});
+  if(res.ok){
+   const data=await res.json();
+   const item=data?.product||data?.data||data?.results?.[0]||data?.[0]||data;
+   const name=item?.name||item?.product_name||item?.title||item?.productName;
+   const maker=item?.maker||item?.brand||item?.manufacturer;
+   if(name){
+    $('name').value=name;
+    box.innerHTML='<div style="font-size:13px;font-weight:800">✅ 商品情報を取得しました</div><div class="metric"><span>商品名</span><b>'+esc(name)+'</b></div>'+(maker?'<div class="metric"><span>メーカー/ブランド</span><b>'+esc(maker)+'</b></div>':'');
+    return;
+   }
+  }
+ }catch(_){ }
+ box.innerHTML='<div style="font-size:13px;font-weight:800">ℹ️ 自動取得できませんでした</div><div class="hint">このJANは商品DBに未登録、またはAPIが利用できません。検索ボタンから商品を確認できます。</div><div class="actions" style="margin-top:8px"><button class="secondary smallbtn" type="button" onclick="searchJanWeb()">Google検索</button><button class="secondary smallbtn" type="button" onclick="searchMarket(&quot;amazon&quot;)">Amazon検索</button></div>';
+}
+function searchJanWeb(){const q=encodeURIComponent($('jan').value.trim());if(q)window.open('https://www.google.com/search?q='+q,'_blank','noopener');}
+
 async function scanBarcodePhoto(e){
  const input=e.target;
  const f=input.files?.[0];
@@ -248,6 +273,7 @@ async function scanBarcodePhoto(e){
   const scanner=new Html5Qrcode('reader',{verbose:false});
   const result=await scanner.scanFile(prepared,false);
   $('jan').value=result;
+  await lookupProductByJan(result);
   navigator.vibrate?.(100);
   alert('JANコードを読み取りました：\n'+result);
   try{scanner.clear();}catch(_){ }
