@@ -7,25 +7,27 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="せどりv2">
-<title>せどり仕入れアシスタント v2.3.1</title>
+<title>せどり仕入れアシスタント v2.4.0</title>
 <style>
 :root{--navy:#172554;--blue:#2563eb;--bg:#f3f5f9;--card:#fff;--text:#172033;--muted:#64748b;--line:#e2e8f0;--green:#15803d;--red:#b91c1c}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;color:var(--text);padding-bottom:84px}
 header{background:var(--navy);color:white;padding:18px 16px 16px;position:sticky;top:0;z-index:5}header h1{font-size:18px;margin:0 0 4px}header p{font-size:12px;margin:0;color:#cbd5e1}
 main{max-width:760px;margin:auto;padding:14px}.tabs{display:flex;gap:8px;overflow:auto;margin-bottom:14px}.tab{border:1px solid var(--line);background:white;border-radius:999px;padding:10px 14px;white-space:nowrap;font-weight:650;color:var(--muted)}.tab.active{background:var(--navy);border-color:var(--navy);color:white}
 .panel{display:none}.panel.active{display:block}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:12px;box-shadow:0 2px 8px #0f172a08}
-h2{font-size:16px;margin:0 0 12px}.hint{font-size:12px;color:var(--muted);line-height:1.6}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{margin-bottom:11px}.field label{display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:5px}input,select,textarea{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;background:white;font-size:16px;color:var(--text);min-width:0}input[type=number]{font-variant-numeric:tabular-nums}button{border:0;border-radius:11px;padding:12px 14px;background:var(--blue);color:white;font-weight:700;font-size:14px;cursor:pointer}button.secondary{background:#eaf0ff;color:#1d4ed8}.photoBtn{display:inline-flex;flex:1;align-items:center;justify-content:center;border-radius:11px;padding:12px 14px;background:#2563eb;color:white;font-weight:700;font-size:14px;cursor:pointer}.photoBtn.secondary{background:#eaf0ff;color:#1d4ed8}button.dark{background:var(--navy)}button.danger{background:#fee2e2;color:var(--red)}button:disabled{opacity:.5}.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{flex:1}.result{background:#eff6ff;border:1px solid #bfdbfe;border-radius:14px;padding:14px;margin-top:8px}.profit{font-size:28px;font-weight:800;color:var(--green);font-variant-numeric:tabular-nums}.metric{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dashed #cbd5e1;font-size:13px}.metric:last-child{border:0}.pill{display:inline-block;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:800;background:#e2e8f0;color:#334155}.pill.good{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.bad{background:#fee2e2;color:#991b1b}
+h2{font-size:16px;margin:0 0 12px}.hint{font-size:12px;color:var(--muted);line-height:1.6}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{margin-bottom:11px}.field label{display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:5px}input,select,textarea{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;background:white;font-size:16px;color:var(--text);min-width:0}input[type=number]{font-variant-numeric:tabular-nums}button{border:0;border-radius:11px;padding:12px 14px;background:var(--blue);color:white;font-weight:700;font-size:14px;cursor:pointer}button.secondary{background:#eaf0ff;color:#1d4ed8}button.dark{background:var(--navy)}button.danger{background:#fee2e2;color:var(--red)}button:disabled{opacity:.5}.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{flex:1}.result{background:#eff6ff;border:1px solid #bfdbfe;border-radius:14px;padding:14px;margin-top:8px}.profit{font-size:28px;font-weight:800;color:var(--green);font-variant-numeric:tabular-nums}.metric{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dashed #cbd5e1;font-size:13px}.metric:last-child{border:0}.pill{display:inline-block;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:800;background:#e2e8f0;color:#334155}.pill.good{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.bad{background:#fee2e2;color:#991b1b}
 .list-item{padding:12px 0;border-bottom:1px solid var(--line)}.list-item:last-child{border:0}.list-item strong{display:block;font-size:14px}.sub{font-size:12px;color:var(--muted);margin-top:4px}.empty{color:var(--muted);font-size:13px;text-align:center;padding:20px 8px}
-#photoPreview{max-width:100%;max-height:180px;border-radius:10px;display:none;margin-top:8px}
+video{width:100%;border-radius:12px;background:#0f172a;max-height:280px;object-fit:cover}#cameraWrap{display:none;margin-top:10px}#photoPreview{max-width:100%;max-height:180px;border-radius:10px;display:none;margin-top:8px}
 footer{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;border-top:1px solid var(--line);padding:9px 14px calc(9px + env(safe-area-inset-bottom));font-size:11px;color:var(--muted);text-align:center;backdrop-filter:blur(8px)}
 .smallbtn{padding:8px 10px;font-size:12px}.totalgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.totalbox{background:#f8fafc;border-radius:12px;padding:12px}.totalbox span{font-size:11px;color:var(--muted)}.totalbox b{display:block;font-size:20px;margin-top:3px}
 @media(min-width:650px){main{padding:22px}.grid{grid-template-columns:repeat(3,1fr)}}
 .quick-card{border:2px solid #2563eb}.quick-card h2{margin-bottom:10px}
 @media(max-width:430px){.quick-card input,.quick-card select{font-size:18px;padding:13px}.quick-card button{font-size:15px;padding:14px}}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
-<header><h1>📦 せどり仕入れアシスタント v2.2.5</h1><p>店頭スピード重視｜JAN・利益・仕入れ判定を最短操作で</p></header>
+<div id="reader_tmp" style="display:none"></div>
+<header><h1>📦 せどり仕入れアシスタント v2.4.0</h1><p>店頭スピード重視｜JAN・利益・仕入れ判定を最短操作で</p></header>
 <main>
 <div class="tabs">
 <button class="tab active" data-tab="scan">商品チェック</button>
@@ -52,15 +54,15 @@ footer{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;border-top:1p
 <div class="card">
 <h2>① 商品を特定する</h2>
 <div class="actions">
-<button class="secondary" type="button" onclick="openBarcodePhoto()">📸 バーコードを撮影してJAN読取</button><input id="barcodePhoto" type="file" accept="image/*" capture="environment" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" onchange="scanBarcodePhoto(event)"><div id="reader" style="display:none;width:1px;height:1px;overflow:hidden"></div>
-<label class="photoBtn" for="photo">📸 写真を撮る</label>
-<label class="photoBtn secondary" for="photoSelect">🖼️ 写真を選ぶ</label>
-<input id="photo" type="file" accept="image/*" capture="environment" onchange="previewPhoto(event)">
-<input id="photoSelect" type="file" accept="image/*" hidden onchange="previewPhoto(event)">
+<button onclick="openBarcodePhoto()">📸 バーコードを撮影</button>
+<button class="secondary" onclick="document.getElementById('photo').click()">商品写真を追加</button>
+<input id="barcodePhoto" type="file" accept="image/*" capture="environment" hidden onchange="scanBarcodePhoto(event)">
+<input id="photo" type="file" accept="image/*" capture="environment" hidden onchange="previewPhoto(event)">
 </div>
 <img id="photoPreview" alt="商品写真プレビュー">
-<p class="hint">iPhoneでは「バーコードを撮影してJAN読取」を使用します。JANを読み取ると商品名候補を自動検索します。</p>
-<div class="field"><label>商品名・型番</label><input id="name" placeholder="JAN読み取り後に自動入力されます。必要なら手入力も可"></div><div id="productLookup" class="result" style="display:none;margin-top:8px"></div>
+<div id="lookupStatus" class="result" style="display:none"></div>
+<p class="hint">バーコードは写真からJANを読み取ります。JAN取得後、無料のUPCitemdb商品DBを照会して商品名・メーカー等を自動入力します。</p>
+<div class="field"><label>商品名・型番</label><input id="name" placeholder="JAN読み取り後に自動入力"></div>
 <div class="grid">
 <div class="field"><label>JAN・バーコード</label><input id="jan" placeholder="バーコード番号"></div>
 <div class="field"><label>ジャンル</label><select id="category"><option>中古家電・ゲーム</option><option>工具・DIY</option><option>ホビー・おもちゃ</option><option>日用品・生活雑貨</option><option>その他</option></select></div>
@@ -82,7 +84,7 @@ footer{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;border-top:1p
 </div>
 <div class="actions">
 <button class="secondary" onclick="searchMarket('mercari')">メルカリで検索</button>
-<button class="secondary" onclick="searchMarket(&quot;amazon&quot;)">Amazonで検索</button>
+<button class="secondary" onclick="searchMarket('amazon')">Amazonで検索</button>
 </div>
 <div class="result">
 <div class="hint">想定手取り利益</div><div class="profit" id="profit">¥0</div>
@@ -138,17 +140,16 @@ footer{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;border-top:1p
 <li>Amazonの販売手数料はカテゴリー等で異なります。FBA利用時は配送代行手数料・保管料等も加算。</li>
 <li>メルカリの販売手数料・配送方法は最新条件を販売前に確認。</li>
 <li>中古品を継続的に仕入れて販売する場合、古物商許可が必要となるケースがあります。事前に管轄警察署へ確認。</li>
-<li>この試作版は外部サービスへ接続していません。価格の自動取得・画像からの商品特定は未実装です。</li>
+<li>JAN商品名取得は外部の商品DBを利用します。無料枠・収録状況・通信状態により取得できない場合があります。</li>
 </ul>
 </div>
 </section>
 </main>
-<footer>v2.3.0 JAN商品名自動取得｜データはこの端末のブラウザ内に保存｜相場価格・手数料は入力値です</footer>
-<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<footer>v2.4.0｜データはこの端末のブラウザ内に保存｜相場価格・手数料は入力値です</footer>試作版｜入力データは端末内保存｜価格・手数料は販売前に必ず再確認</footer>
 <script>
 const $=id=>document.getElementById(id);
 let items=JSON.parse(localStorage.getItem('resale_items_v1')||'[]');
-let html5Qr=null;
+let lookupBusy=false;
 const yen=n=>'¥'+Math.round(Number(n)||0).toLocaleString('ja-JP');
 function persist(){localStorage.setItem('resale_items_v1',JSON.stringify(items));render();}
 function val(id){return Number($(id).value)||0}
@@ -197,115 +198,20 @@ function exportCSV(){if(!items.length){alert('書き出すデータがありま�
 function clearAll(){if(confirm('登録した全商品データを削除します。この操作は元に戻せません。')){items=[];persist();}}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function previewPhoto(e){const f=e.target.files[0];if(!f)return;const im=$('photoPreview');im.src=URL.createObjectURL(f);im.style.display='block';}
-function cameraErrorText(e){
- const n=e?.name||'';
- const m=String(e?.message||e||'');
- if(n==='NotAllowedError'||n==='PermissionDeniedError') return 'カメラの使用が許可されていません。iPhoneの「設定 → Safari → カメラ」が「許可」になっているか確認してください。';
- if(n==='NotReadableError'||n==='TrackStartError') return 'カメラが他のアプリやSafariの別タブで使用中の可能性があります。カメラを使っている画面を閉じて、もう一度試してください。';
- if(n==='OverconstrainedError') return '背面カメラの条件に合いませんでした。別のカメラ条件で再試行します。';
- if(n==='SecurityError') return 'HTTPS以外ではカメラを使用できません。';
- return 'カメラ起動エラー：'+(m||n||'原因を取得できませんでした');
-}
-
-function openBarcodePhoto(){
- // iOSではlabel+hidden inputより、クリックイベントから直接file inputを開く方が安定。
- const input=$('barcodePhoto');
- if(input) input.click();
-}
-
-function prepareBarcodeImage(file,maxSide=1800){
- return new Promise((resolve,reject)=>{
-  const img=new Image();
-  const url=URL.createObjectURL(file);
-  img.onload=()=>{
-   try{
-    const scale=Math.min(1,maxSide/Math.max(img.naturalWidth,img.naturalHeight));
-    const w=Math.max(1,Math.round(img.naturalWidth*scale));
-    const h=Math.max(1,Math.round(img.naturalHeight*scale));
-    const canvas=document.createElement('canvas');
-    canvas.width=w; canvas.height=h;
-    const ctx=canvas.getContext('2d',{willReadFrequently:true});
-    ctx.drawImage(img,0,0,w,h);
-    canvas.toBlob(blob=>{
-     URL.revokeObjectURL(url);
-     if(!blob){reject(new Error('画像変換に失敗しました'));return;}
-     resolve(new File([blob],'barcode.jpg',{type:'image/jpeg'}));
-    },'image/jpeg',0.92);
-   }catch(e){URL.revokeObjectURL(url);reject(e);}
-  };
-  img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('画像を読み込めませんでした'));};
-  img.src=url;
- });
-}
-
-async function lookupProductByJan(jan){
- const box=$('productLookup');
- box.style.display='block';
- box.innerHTML='<div class="hint">🔎 JANから商品名を検索中…</div>';
- const clean=String(jan||'').replace(/\D/g,'');
- if(!/^(?:\d{8}|\d{12,13})$/.test(clean)){box.innerHTML='<div class="hint">JANの桁数を確認してください。</div>';return;}
-
- // ① 商品名DB：ProductGuru（無料・APIキー不要・ブラウザから利用可能）
- try{
-  const url='https://myproduct.guru/lookup/'+encodeURIComponent(clean)+'.json';
-  const res=await fetch(url,{headers:{'Accept':'application/json'}});
-  if(res.ok){
-   const data=await res.json();
-   const item=data?.product||data?.data||data?.item||data;
-   const name=item?.name||item?.product_name||item?.productName||item?.title||data?.name||data?.product_name||data?.productName||data?.title;
-   const maker=item?.brand||item?.manufacturer||item?.maker||data?.brand||data?.manufacturer||data?.maker;
-   const category=item?.category||data?.category;
-   if(name){
-    $('name').value=name;
-    box.innerHTML='<div style="font-size:13px;font-weight:800">✅ 商品名を自動取得しました</div><div class="metric"><span>商品名</span><b>'+esc(name)+'</b></div>'
-      +(maker?'<div class="metric"><span>メーカー/ブランド</span><b>'+esc(maker)+'</b></div>':'')
-      +(category?'<div class="metric"><span>カテゴリ</span><b>'+esc(category)+'</b></div>':'')
-      +'<div class="hint" style="margin-top:6px">商品情報：ProductGuru</div>';
-    return;
-   }
-  }
- }catch(_){ }
-
- // ② JAN→ASIN：商品DBに無い場合でもASINを取得してAmazon確認へつなぐ
- try{
-  const url='https://jan2asin.kozo.info/api/v1/jan/'+encodeURIComponent(clean);
-  const res=await fetch(url,{headers:{'Accept':'application/json'}});
-  if(res.ok){
-   const data=await res.json();
-   const asins=Array.isArray(data?.asin)?data.asin:(data?.asin?[data.asin]:[]);
-   if(data?.found && asins.length){
-    const asin=String(asins[0]);
-    box.innerHTML='<div style="font-size:13px;font-weight:800">ℹ️ 商品名DBでは未取得ですが、Amazon商品を特定できました</div><div class="metric"><span>ASIN</span><b>'+esc(asin)+'</b></div><div class="hint">Amazonで商品名を確認できます。</div><div class="actions" style="margin-top:8px"><button class="secondary smallbtn" type="button" onclick="window.open(\'https://www.amazon.co.jp/dp/'+encodeURIComponent(asin)+'\',\'_blank\',\'noopener\')">Amazon商品ページ</button><button class="secondary smallbtn" type="button" onclick="searchJanWeb()">Google検索</button></div>';
-    return;
-   }
-  }
- }catch(_){ }
-
- box.innerHTML='<div style="font-size:13px;font-weight:800">ℹ️ 自動取得できませんでした</div><div class="hint">このJANの商品名DBに登録がないか、外部APIへ接続できませんでした。JAN検索から確認できます。</div><div class="actions" style="margin-top:8px"><button class="secondary smallbtn" type="button" onclick="searchJanWeb()">Google検索</button><button class="secondary smallbtn" type="button" onclick="searchMarket(&quot;amazon&quot;)">Amazon検索</button></div>';
-}
-function searchJanWeb(){const q=encodeURIComponent($('jan').value.trim());if(q)window.open('https://www.google.com/search?q='+q,'_blank','noopener');}
-
-async function scanBarcodePhoto(e){
- const input=e.target;
- const f=input.files?.[0];
- if(!f)return;
- try{
-  if(typeof Html5Qrcode==='undefined') throw new Error('バーコードライブラリの読み込みに失敗しました');
-  const prepared=await prepareBarcodeImage(f,1800);
-  const scanner=new Html5Qrcode('reader',{verbose:false});
-  const result=await scanner.scanFile(prepared,false);
-  $('jan').value=result;
-  await lookupProductByJan(result);
-  navigator.vibrate?.(100);
-  alert('JANコードを読み取りました：\n'+result);
-  try{scanner.clear();}catch(_){ }
- }catch(err){
-  alert('バーコードを読み取れませんでした。\n\n・バーコード全体を画面に入れる\n・ピントを合わせる\n・反射を避ける\n・明るい場所で撮影する\n\n撮影し直す場合は、バーコード全体を明るくピントが合った状態で撮影してください。');
- }finally{
-  input.value='';
- }
+function openBarcodePhoto(){$('barcodePhoto').value='';$('barcodePhoto').click();}
+function prepareBarcodeImage(file,maxSide=1800){return new Promise((resolve,reject)=>{const im=new Image();const url=URL.createObjectURL(file);im.onload=()=>{let w=im.naturalWidth,h=im.naturalHeight;const scale=Math.min(1,maxSide/Math.max(w,h));w=Math.max(1,Math.round(w*scale));h=Math.max(1,Math.round(h*scale));const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(im,0,0,w,h);URL.revokeObjectURL(url);c.toBlob(b=>b?resolve(b):reject(new Error('画像変換失敗')),'image/jpeg',0.92)};im.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('画像読込失敗'))};im.src=url;});}
+async function scanBarcodePhoto(e){const file=e.target.files?.[0];if(!file)return;const st=$('lookupStatus');st.style.display='block';st.innerHTML='<b>📸 バーコードを解析中…</b><div class="hint">少し待ってください</div>';try{const prepared=await prepareBarcodeImage(file);const qr=new Html5Qrcode('reader_tmp',{verbose:false});let result=null;try{result=await qr.scanFile(prepared,false)}finally{try{await qr.clear()}catch(_){}}const jan=String(result||'').replace(/\D/g,'');if(!/^\d{8,13}$/.test(jan)){throw new Error('JAN候補を取得できませんでした')}$('jan').value=jan;navigator.vibrate?.(100);await lookupProductByJan(jan)}catch(err){st.innerHTML='<b>⚠️ バーコードを読み取れませんでした</b><div class="hint">バーコードを真っ直ぐ・明るい場所で撮影して、もう一度試してください。</div>';}finally{e.target.value='';}}
+async function lookupProductByJan(jan){const st=$('lookupStatus');st.style.display='block';st.innerHTML='<b>🔎 商品情報を検索中…</b><div class="hint">JAN：'+esc(jan)+'</div>';let found=false;let lastError='';
+  // Source 1: UPCitemdb free trial API (100 combined requests/day, no key required)
+  try{const u='https://api.upcitemdb.com/prod/trial/lookup?upc='+encodeURIComponent(jan);const r=await fetch(u,{method:'GET',headers:{'Accept':'application/json'},cache:'no-store'});if(r.ok){const d=await r.json();const item=d?.items?.[0];if(item?.title){$('name').value=item.title;found=true;const brand=item.brand||'';const model=item.model||'';st.innerHTML='<b>✅ 商品名を自動取得しました</b><div style="margin-top:5px">'+esc(item.title)+'</div><div class="hint">'+esc([brand,model].filter(Boolean).join(' / '))+'</div>';}}
+    else{lastError='HTTP '+r.status;}}catch(e){lastError='通信エラー';}
+  if(found)return;
+  // Source 2: direct web searches as guaranteed manual fallback
+  const g='https://www.google.com/search?q='+encodeURIComponent('"'+jan+'"');const a='https://www.amazon.co.jp/s?k='+encodeURIComponent(jan);const r='https://search.rakuten.co.jp/search/mall/'+encodeURIComponent(jan)+'/';
+  st.innerHTML='<b>⚠️ 商品名を自動取得できませんでした</b><div class="hint">JAN：'+esc(jan)+(lastError?'｜'+esc(lastError):'')+'</div><div class="actions" style="margin-top:8px"><button class="secondary" onclick="window.open('+JSON.stringify(g)+',\'_blank\',\'noopener\')">Googleで検索</button><button class="secondary" onclick="window.open('+JSON.stringify(a)+',\'_blank\',\'noopener\')">Amazonで検索</button><button class="secondary" onclick="window.open('+JSON.stringify(r)+',\'_blank\',\'noopener\')">楽天で検索</button></div>';
 }
 $('budget').value=localStorage.getItem('resale_budget')||50000;$('target').value=localStorage.getItem('resale_target')||50000;
 calc();render();
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
 </script>
 </body></html>
