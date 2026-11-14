@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="せどりv2">
-<title>せどり仕入れアシスタント v2.2.2</title>
+<title>せどり仕入れアシスタント v2.2.3</title>
 <style>
 :root{--navy:#172554;--blue:#2563eb;--bg:#f3f5f9;--card:#fff;--text:#172033;--muted:#64748b;--line:#e2e8f0;--green:#15803d;--red:#b91c1c}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;color:var(--text);padding-bottom:84px}
@@ -25,7 +25,7 @@ footer{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;border-top:1p
 </style>
 </head>
 <body>
-<header><h1>📦 せどり仕入れアシスタント v2.2.2</h1><p>店頭スピード重視｜JAN・利益・仕入れ判定を最短操作で</p></header>
+<header><h1>📦 せどり仕入れアシスタント v2.2.3</h1><p>店頭スピード重視｜JAN・利益・仕入れ判定を最短操作で</p></header>
 <main>
 <div class="tabs">
 <button class="tab active" data-tab="scan">商品チェック</button>
@@ -52,7 +52,7 @@ footer{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;border-top:1p
 <div class="card">
 <h2>① 商品を特定する</h2>
 <div class="actions">
-<button onclick="startCamera()">📷 バーコード読取</button><label class="photoBtn secondary" for="barcodePhoto">📸 バーコードを撮影</label><input id="barcodePhoto" type="file" accept="image/*" capture="environment" onchange="scanBarcodePhoto(event)">
+<button onclick="startCamera()">📷 バーコード読取</button><button class="secondary" type="button" onclick="openBarcodePhoto()">📸 バーコードを撮影</button><input id="barcodePhoto" type="file" accept="image/*" capture="environment" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" onchange="scanBarcodePhoto(event)">
 <label class="photoBtn" for="photo">📸 写真を撮る</label>
 <label class="photoBtn secondary" for="photoSelect">🖼️ 写真を選ぶ</label>
 <input id="photo" type="file" accept="image/*" capture="environment" onchange="previewPhoto(event)">
@@ -60,7 +60,7 @@ footer{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;border-top:1p
 </div>
 <div id="cameraWrap"><div id="reader"></div><div class="actions" style="margin-top:8px"><button class="secondary" onclick="stopCamera()">カメラ終了</button></div></div>
 <img id="photoPreview" alt="商品写真プレビュー">
-<p class="hint">iPhoneでは「バーコードを撮影」で写真からJANを読み取れます。HTTPS環境なら「バーコード読取」でカメラを向けたまま読み取れます。</p>
+<p class="hint">iPhoneでは「バーコード読取」を基本に使用します。写真から読む場合は「バーコードを撮影」。iOS向けにaspectRatio指定を外し、起動失敗時は背面カメラを自動再試行します。</p>
 <div class="field"><label>商品名・型番</label><input id="name" placeholder="例：Makita TD173D / Nintendo Switch"></div>
 <div class="grid">
 <div class="field"><label>JAN・バーコード</label><input id="jan" placeholder="バーコード番号"></div>
@@ -144,7 +144,7 @@ footer{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;border-top:1p
 </div>
 </section>
 </main>
-<footer>v2.2.2｜データはこの端末のブラウザ内に保存｜相場価格・手数料は入力値です</footer>試作版｜入力データは端末内保存｜価格・手数料は販売前に必ず再確認</footer>
+<footer>v2.2.3｜データはこの端末のブラウザ内に保存｜相場価格・手数料は入力値です</footer>試作版｜入力データは端末内保存｜価格・手数料は販売前に必ず再確認</footer>
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
 const $=id=>document.getElementById(id);
@@ -198,92 +198,142 @@ function exportCSV(){if(!items.length){alert('書き出すデータがありま�
 function clearAll(){if(confirm('登録した全商品データを削除します。この操作は元に戻せません。')){items=[];persist();}}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function previewPhoto(e){const f=e.target.files[0];if(!f)return;const im=$('photoPreview');im.src=URL.createObjectURL(f);im.style.display='block';}
-
-let scanLocked=false;
+function cameraErrorText(e){
+ const n=e?.name||'';
+ const m=String(e?.message||e||'');
+ if(n==='NotAllowedError'||n==='PermissionDeniedError') return 'カメラの使用が許可されていません。iPhoneの「設定 → Safari → カメラ」が「許可」になっているか確認してください。';
+ if(n==='NotReadableError'||n==='TrackStartError') return 'カメラが他のアプリやSafariの別タブで使用中の可能性があります。カメラを使っている画面を閉じて、もう一度試してください。';
+ if(n==='OverconstrainedError') return '背面カメラの条件に合いませんでした。別のカメラ条件で再試行します。';
+ if(n==='SecurityError') return 'HTTPS以外ではカメラを使用できません。';
+ return 'カメラ起動エラー：'+(m||n||'原因を取得できませんでした');
+}
 
 async function startCamera(){
-  scanLocked=false;
+ const btn=document.querySelector('button[onclick="startCamera()"]');
+ try{
+  if(!window.isSecureContext) throw new Error('HTTPSではありません');
+  if(!navigator.mediaDevices?.getUserMedia) throw new Error('このブラウザではカメラAPIを利用できません');
+  if(typeof Html5Qrcode==='undefined') throw new Error('バーコードライブラリの読み込みに失敗しました');
+  if(typeof Html5QrcodeSupportedFormats==='undefined') throw new Error('バーコード形式情報の読み込みに失敗しました');
+  if(btn) btn.disabled=true;
+  await stopCamera();
+  html5Qr=new Html5Qrcode('reader',{verbose:false});
+  $('cameraWrap').style.display='block';
+
+  // iPhone/SafariではaspectRatioを指定するとstart()が失敗する報告があるため、ここでは指定しない。
+  const config={
+   fps:10,
+   qrbox:{width:300,height:120},
+   disableFlip:true,
+   formatsToSupport:[
+    Html5QrcodeSupportedFormats.EAN_13,
+    Html5QrcodeSupportedFormats.EAN_8,
+    Html5QrcodeSupportedFormats.UPC_A,
+    Html5QrcodeSupportedFormats.UPC_E
+   ]
+  };
+  let started=false;
+  let lastError=null;
   try{
-    if(!window.isSecureContext) throw new Error('HTTPSではありません');
-    if(!navigator.mediaDevices?.getUserMedia) throw new Error('カメラAPIを利用できません');
-    if(typeof Html5Qrcode==='undefined') throw new Error('バーコードライブラリを読み込めません');
-
-    await stopCamera();
-    html5Qr=new Html5Qrcode('reader',{verbose:false});
-    $('cameraWrap').style.display='block';
-
-    const config={
-      fps:10,
-      qrbox:{width:300,height:105},
-      aspectRatio:1.7777778,
-      disableFlip:true,
-      formatsToSupport:[
-        Html5QrcodeSupportedFormats.EAN_13,
-        Html5QrcodeSupportedFormats.EAN_8,
-        Html5QrcodeSupportedFormats.UPC_A,
-        Html5QrcodeSupportedFormats.UPC_E
-      ]
-    };
-
-    await html5Qr.start(
-      {facingMode:{ideal:'environment'}},
-      config,
-      decodedText=>{
-        if(scanLocked) return;
-        scanLocked=true;
-        $('jan').value=decodedText;
-        navigator.vibrate?.(100);
-        setTimeout(()=>stopCamera(),80);
-      },
-      ()=>{}
-    );
+   await html5Qr.start({facingMode:'environment'},config,decodedText=>{
+    if(!decodedText)return;
+    $('jan').value=decodedText;
+    navigator.vibrate?.(100);
+    stopCamera();
+   },()=>{});
+   started=true;
   }catch(e){
-    $('cameraWrap').style.display='none';
-    html5Qr=null;
-    alert('カメラを起動できませんでした。iPhoneのカメラ許可とHTTPS接続を確認してください。');
+   lastError=e;
   }
+  // facingModeで失敗した場合だけ、カメラ一覧から背面候補を選んで1回だけ再試行。
+  if(!started){
+   try{
+    try{await html5Qr.stop();}catch(_){ }
+    try{html5Qr.clear();}catch(_){ }
+    html5Qr=new Html5Qrcode('reader',{verbose:false});
+    await new Promise(r=>setTimeout(r,350));
+    const cameras=await Html5Qrcode.getCameras();
+    if(!cameras?.length) throw lastError||new Error('利用可能なカメラがありません');
+    const back=cameras.find(c=>/back|rear|environment|背面|外側/i.test(c.label))||cameras[cameras.length-1];
+    await html5Qr.start(back.id,config,decodedText=>{
+     if(!decodedText)return;
+     $('jan').value=decodedText;
+     navigator.vibrate?.(100);
+     stopCamera();
+    },()=>{});
+    started=true;
+   }catch(e2){
+    lastError=e2||lastError;
+   }
+  }
+  if(!started) throw lastError||new Error('カメラを開始できませんでした');
+ }catch(e){
+  $('cameraWrap').style.display='none';
+  const detail=cameraErrorText(e);
+  alert(detail+'\n\nまず「閉じる」を押して、もう一度「バーコード読取」をタップしてください。');
+ }finally{
+  if(btn) btn.disabled=false;
+ }
 }
 
 async function stopCamera(){
-  try{
-    if(html5Qr){
-      const state=html5Qr.getState?.();
-      if(state===2 || state===3 || state===1) await html5Qr.stop();
-      html5Qr.clear();
-    }
-  }catch(e){}
-  html5Qr=null;
-  $('cameraWrap').style.display='none';
-  scanLocked=false;
+ try{if(html5Qr){await html5Qr.stop();}}catch(e){}
+ try{if(html5Qr){html5Qr.clear();}}catch(e){}
+ html5Qr=null;
+ $('cameraWrap').style.display='none';
+}
+
+function openBarcodePhoto(){
+ // iOSではlabel+hidden inputより、クリックイベントから直接file inputを開く方が安定。
+ const input=$('barcodePhoto');
+ if(input) input.click();
+}
+
+function prepareBarcodeImage(file,maxSide=1800){
+ return new Promise((resolve,reject)=>{
+  const img=new Image();
+  const url=URL.createObjectURL(file);
+  img.onload=()=>{
+   try{
+    const scale=Math.min(1,maxSide/Math.max(img.naturalWidth,img.naturalHeight));
+    const w=Math.max(1,Math.round(img.naturalWidth*scale));
+    const h=Math.max(1,Math.round(img.naturalHeight*scale));
+    const canvas=document.createElement('canvas');
+    canvas.width=w; canvas.height=h;
+    const ctx=canvas.getContext('2d',{willReadFrequently:true});
+    ctx.drawImage(img,0,0,w,h);
+    canvas.toBlob(blob=>{
+     URL.revokeObjectURL(url);
+     if(!blob){reject(new Error('画像変換に失敗しました'));return;}
+     resolve(new File([blob],'barcode.jpg',{type:'image/jpeg'}));
+    },'image/jpeg',0.92);
+   }catch(e){URL.revokeObjectURL(url);reject(e);}
+  };
+  img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('画像を読み込めませんでした'));};
+  img.src=url;
+ });
 }
 
 async function scanBarcodePhoto(e){
-  const input=e.target;
-  const f=input.files?.[0];
-  if(!f) return;
-
-  try{
-    if(typeof Html5Qrcode==='undefined'){
-      alert('バーコード読取ライブラリを読み込めませんでした。');
-      return;
-    }
-
-    // Stop live camera first so the decoder can safely reuse #reader.
-    await stopCamera();
-
-    const scanner=new Html5Qrcode('reader',{verbose:false});
-    const result=await scanner.scanFile(f,true);
-    $('jan').value=result;
-    navigator.vibrate?.(100);
-    alert('JANコードを読み取りました：\n'+result);
-    try{scanner.clear();}catch(_){}
-  }catch(err){
-    alert('バーコードを読み取れませんでした。\nバーコード全体を近づけて、明るい場所で撮影してください。');
-  }finally{
-    input.value='';
-  }
+ const input=e.target;
+ const f=input.files?.[0];
+ if(!f)return;
+ try{
+  if(typeof Html5Qrcode==='undefined') throw new Error('バーコードライブラリの読み込みに失敗しました');
+  await stopCamera();
+  const prepared=await prepareBarcodeImage(f,1800);
+  const scanner=new Html5Qrcode('reader',{verbose:false});
+  const result=await scanner.scanFile(prepared,false);
+  $('jan').value=result;
+  navigator.vibrate?.(100);
+  alert('JANコードを読み取りました：\n'+result);
+  try{scanner.clear();}catch(_){ }
+ }catch(err){
+  alert('バーコードを読み取れませんでした。\n\n・バーコード全体を画面に入れる\n・ピントを合わせる\n・反射を避ける\n・明るい場所で撮影する\n\nそれでも読めない場合は、ライブの「バーコード読取」を使ってください。');
+ }finally{
+  input.value='';
+ }
 }
-
 $('budget').value=localStorage.getItem('resale_budget')||50000;$('target').value=localStorage.getItem('resale_target')||50000;
 calc();render();
 </script>
