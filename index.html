@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="せどりv2">
-<title>せどり仕入れアシスタント v2.4.0</title>
+<title>せどり仕入れアシスタント v2.4.1</title>
 <style>
 :root{--navy:#172554;--blue:#2563eb;--bg:#f3f5f9;--card:#fff;--text:#172033;--muted:#64748b;--line:#e2e8f0;--green:#15803d;--red:#b91c1c}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;color:var(--text);padding-bottom:84px}
@@ -27,7 +27,7 @@ footer{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;border-top:1p
 </head>
 <body>
 <div id="reader_tmp" style="display:none"></div>
-<header><h1>📦 せどり仕入れアシスタント v2.4.0</h1><p>店頭スピード重視｜JAN・利益・仕入れ判定を最短操作で</p></header>
+<header><h1>📦 せどり仕入れアシスタント v2.4.1</h1><p>店頭スピード重視｜JAN・利益・仕入れ判定を最短操作で</p></header>
 <main>
 <div class="tabs">
 <button class="tab active" data-tab="scan">商品チェック</button>
@@ -145,7 +145,7 @@ footer{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;border-top:1p
 </div>
 </section>
 </main>
-<footer>v2.4.0｜データはこの端末のブラウザ内に保存｜相場価格・手数料は入力値です</footer>試作版｜入力データは端末内保存｜価格・手数料は販売前に必ず再確認</footer>
+<footer>v2.4.1｜データはこの端末のブラウザ内に保存｜相場価格・手数料は入力値です</footer>試作版｜入力データは端末内保存｜価格・手数料は販売前に必ず再確認</footer>
 <script>
 const $=id=>document.getElementById(id);
 let items=JSON.parse(localStorage.getItem('resale_items_v1')||'[]');
@@ -199,8 +199,46 @@ function clearAll(){if(confirm('登録した全商品データを削除します
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function previewPhoto(e){const f=e.target.files[0];if(!f)return;const im=$('photoPreview');im.src=URL.createObjectURL(f);im.style.display='block';}
 function openBarcodePhoto(){$('barcodePhoto').value='';$('barcodePhoto').click();}
-function prepareBarcodeImage(file,maxSide=1800){return new Promise((resolve,reject)=>{const im=new Image();const url=URL.createObjectURL(file);im.onload=()=>{let w=im.naturalWidth,h=im.naturalHeight;const scale=Math.min(1,maxSide/Math.max(w,h));w=Math.max(1,Math.round(w*scale));h=Math.max(1,Math.round(h*scale));const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(im,0,0,w,h);URL.revokeObjectURL(url);c.toBlob(b=>b?resolve(b):reject(new Error('画像変換失敗')),'image/jpeg',0.92)};im.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('画像読込失敗'))};im.src=url;});}
-async function scanBarcodePhoto(e){const file=e.target.files?.[0];if(!file)return;const st=$('lookupStatus');st.style.display='block';st.innerHTML='<b>📸 バーコードを解析中…</b><div class="hint">少し待ってください</div>';try{const prepared=await prepareBarcodeImage(file);const qr=new Html5Qrcode('reader_tmp',{verbose:false});let result=null;try{result=await qr.scanFile(prepared,false)}finally{try{await qr.clear()}catch(_){}}const jan=String(result||'').replace(/\D/g,'');if(!/^\d{8,13}$/.test(jan)){throw new Error('JAN候補を取得できませんでした')}$('jan').value=jan;navigator.vibrate?.(100);await lookupProductByJan(jan)}catch(err){st.innerHTML='<b>⚠️ バーコードを読み取れませんでした</b><div class="hint">バーコードを真っ直ぐ・明るい場所で撮影して、もう一度試してください。</div>';}finally{e.target.value='';}}
+function loadBarcodeImage(file){return new Promise((resolve,reject)=>{const im=new Image();const url=URL.createObjectURL(file);im.onload=()=>{URL.revokeObjectURL(url);resolve(im)};im.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('画像読込失敗'))};im.src=url;});}
+function canvasToBlob(c,quality=0.94){return new Promise((resolve,reject)=>c.toBlob(b=>b?resolve(b):reject(new Error('画像変換失敗')),'image/jpeg',quality));}
+async function makeBarcodeVariants(file){
+ const im=await loadBarcodeImage(file); let w=im.naturalWidth,h=im.naturalHeight;
+ const maxSide=3000, scale=Math.min(1,maxSide/Math.max(w,h)); w=Math.max(1,Math.round(w*scale)); h=Math.max(1,Math.round(h*scale));
+ const base=document.createElement('canvas');base.width=w;base.height=h;const bctx=base.getContext('2d',{willReadFrequently:true});bctx.imageSmoothingEnabled=true;bctx.imageSmoothingQuality='high';bctx.drawImage(im,0,0,w,h);
+ const variants=[];
+ const add=(canvas)=>variants.push(canvas);
+ add(base);
+ // Barcodes are usually a horizontal strip: crop the center and enlarge it.
+ const crops=[
+   [0.05,0.20,0.90,0.60],
+   [0.05,0.30,0.90,0.45],
+   [0.10,0.10,0.80,0.80]
+ ];
+ for(const [x,y,cw,ch] of crops){
+   const c=document.createElement('canvas');c.width=Math.min(3200,Math.round(w*cw*1.8));c.height=Math.min(2200,Math.round(h*ch*1.8));
+   const ctx=c.getContext('2d',{willReadFrequently:true});ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(base,Math.round(w*x),Math.round(h*y),Math.round(w*cw),Math.round(h*ch),0,0,c.width,c.height);add(c);
+ }
+ // High-contrast grayscale variants of the base and the most useful crop.
+ for(const src of [base,variants[1],variants[2]]){
+   const c=document.createElement('canvas');c.width=src.width;c.height=src.height;const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(src,0,0);const img=ctx.getImageData(0,0,c.width,c.height);const d=img.data;
+   for(let i=0;i<d.length;i+=4){let y=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];y=Math.max(0,Math.min(255,(y-128)*1.65+128));d[i]=d[i+1]=d[i+2]=y;}
+   ctx.putImageData(img,0,0);add(c);
+ }
+ const blobs=[];for(const c of variants)blobs.push(await canvasToBlob(c));return blobs;
+}
+function validJan(raw){const digits=String(raw||'').replace(/\D/g,'');if(!/^(\d{8}|\d{13})$/.test(digits))return null;let body=digits.slice(0,-1),check=Number(digits.slice(-1)),sum=0;for(let i=0;i<body.length;i++){const n=Number(body[i]);const fromRight=body.length-i;sum+=n*(fromRight%2?3:1);}return ((10-(sum%10))%10)===check?digits:null;}
+async function decodeBarcodeBlob(qr,blob){try{return await qr.scanFile(blob,false)}catch(_){return null}}
+async function scanBarcodePhoto(e){
+ const file=e.target.files?.[0];if(!file)return;const st=$('lookupStatus');st.style.display='block';st.innerHTML='<b>📸 バーコードを高精度解析中…</b><div class="hint">画像を複数パターンで解析しています</div>';
+ try{
+   const blobs=await makeBarcodeVariants(file);const qr=new Html5Qrcode('reader_tmp',{verbose:false,formatsToSupport:[Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.UPC_A,Html5QrcodeSupportedFormats.UPC_E]});
+   let jan=null;
+   try{for(const blob of blobs){const result=await decodeBarcodeBlob(qr,blob);const candidate=validJan(result);if(candidate){jan=candidate;break;}}}finally{try{await qr.clear()}catch(_){}}
+   if(!jan)throw new Error('JAN候補を取得できませんでした');
+   $('jan').value=jan;navigator.vibrate?.(100);await lookupProductByJan(jan);
+ }catch(err){st.innerHTML='<b>⚠️ JANを読み取れませんでした</b><div class="hint">①バーコードを画面いっぱいに入れる　②影・反射を避ける　③真上から撮影する　の3点を試してみてください。</div>';
+ }finally{e.target.value='';}
+}
 async function lookupProductByJan(jan){const st=$('lookupStatus');st.style.display='block';st.innerHTML='<b>🔎 商品情報を検索中…</b><div class="hint">JAN：'+esc(jan)+'</div>';let found=false;let lastError='';
   // Source 1: UPCitemdb free trial API (100 combined requests/day, no key required)
   try{const u='https://api.upcitemdb.com/prod/trial/lookup?upc='+encodeURIComponent(jan);const r=await fetch(u,{method:'GET',headers:{'Accept':'application/json'},cache:'no-store'});if(r.ok){const d=await r.json();const item=d?.items?.[0];if(item?.title){$('name').value=item.title;found=true;const brand=item.brand||'';const model=item.model||'';st.innerHTML='<b>✅ 商品名を自動取得しました</b><div style="margin-top:5px">'+esc(item.title)+'</div><div class="hint">'+esc([brand,model].filter(Boolean).join(' / '))+'</div>';}}
