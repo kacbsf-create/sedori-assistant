@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="せどりv2">
-<title>せどり仕入れアシスタント v2.2.3</title>
+<title>せどり仕入れアシスタント v2.2.4</title>
 <style>
 :root{--navy:#172554;--blue:#2563eb;--bg:#f3f5f9;--card:#fff;--text:#172033;--muted:#64748b;--line:#e2e8f0;--green:#15803d;--red:#b91c1c}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;color:var(--text);padding-bottom:84px}
@@ -25,7 +25,7 @@ footer{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;border-top:1p
 </style>
 </head>
 <body>
-<header><h1>📦 せどり仕入れアシスタント v2.2.3</h1><p>店頭スピード重視｜JAN・利益・仕入れ判定を最短操作で</p></header>
+<header><h1>📦 せどり仕入れアシスタント v2.2.4</h1><p>店頭スピード重視｜JAN・利益・仕入れ判定を最短操作で</p></header>
 <main>
 <div class="tabs">
 <button class="tab active" data-tab="scan">商品チェック</button>
@@ -144,7 +144,7 @@ footer{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;border-top:1p
 </div>
 </section>
 </main>
-<footer>v2.2.3｜データはこの端末のブラウザ内に保存｜相場価格・手数料は入力値です</footer>試作版｜入力データは端末内保存｜価格・手数料は販売前に必ず再確認</footer>
+<footer>v2.2.4｜データはこの端末のブラウザ内に保存｜相場価格・手数料は入力値です</footer>試作版｜入力データは端末内保存｜価格・手数料は販売前に必ず再確認</footer>
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
 const $=id=>document.getElementById(id);
@@ -222,14 +222,12 @@ async function startCamera(){
 
   // iPhone/SafariではaspectRatioを指定するとstart()が失敗する報告があるため、ここでは指定しない。
   const config={
-   fps:10,
-   qrbox:{width:300,height:120},
+   fps:15,
+   qrbox:{width:320,height:100},
    disableFlip:true,
    formatsToSupport:[
     Html5QrcodeSupportedFormats.EAN_13,
-    Html5QrcodeSupportedFormats.EAN_8,
-    Html5QrcodeSupportedFormats.UPC_A,
-    Html5QrcodeSupportedFormats.UPC_E
+    Html5QrcodeSupportedFormats.EAN_8
    ]
   };
   let started=false;
