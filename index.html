@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="せどりv2">
-<title>せどり仕入れアシスタント v2.4.5</title>
+<title>せどり仕入れアシスタント v2.4.6</title>
 <style>
 :root{--navy:#172554;--blue:#2563eb;--bg:#f3f5f9;--card:#fff;--text:#172033;--muted:#64748b;--line:#e2e8f0;--green:#15803d;--red:#b91c1c}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;color:var(--text);padding-bottom:84px}
@@ -29,7 +29,7 @@ footer{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;border-top:1p
 </head>
 <body>
 <div id="reader_tmp" style="display:none"></div>
-<header><h1>📦 せどり仕入れアシスタント v2.4.5</h1><p>店頭スピード重視｜JAN・利益・仕入れ判定を最短操作で</p></header>
+<header><h1>📦 せどり仕入れアシスタント v2.4.6</h1><p>店頭スピード重視｜JAN・利益・仕入れ判定を最短操作で</p></header>
 <main>
 <div class="tabs">
 <button class="tab active" data-tab="scan">商品チェック</button>
@@ -286,49 +286,187 @@ async function makeBarcodeVariants(file){
  const blobs=[];for(const c of variants)blobs.push(await canvasToBlob(c));return blobs;
 }
 
-async function decodeWithZbar(source){
+async function getPolyfillDetector(){
   try{
-    // The standalone test that succeeded on iPhone uses the polyfill directly
-    // and passes an HTMLImageElement to detect(). Keep that exact path here.
-    const Detector=window.barcodeDetectorPolyfill?.BarcodeDetectorPolyfill;
-    if(!Detector)return null;
-    const detector=new Detector({formats:['ean_13','ean_8','upc_a','upc_e']});
-    let image=source;
-    if(source instanceof Blob || source instanceof File){
-      image=await loadBarcodeImage(source);
-    }
-    const results=await detector.detect(image);
-    for(const r of (results||[])){
-      const candidate=validJan(r.rawValue);
-      if(candidate)return candidate;
-    }
-  }catch(_){return null}
+    const ns=(typeof barcodeDetectorPolyfill!=='undefined')?barcodeDetectorPolyfill:null;
+    const C=ns?.BarcodeDetectorPolyfill;
+    if(typeof C!=='function') throw new Error('BarcodeDetectorPolyfillが見つかりません');
+    return new C({formats:['ean_13','ean_8','upc_a','upc_e']});
+  }catch(err){
+    throw err;
+  }
+}
+
+async function imageFromFileExact(file){
+  const url=URL.createObjectURL(file);
+  try{
+    const img=new Image();
+    img.src=url;
+    await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new Error('画像の読み込みに失敗しました'));});
+    if(img.decode) await img.decode().catch(()=>{});
+    return img;
+  }finally{
+    // Keep the object URL alive until the image has fully loaded/decoded.
+    URL.revokeObjectURL(url);
+  }
+}
+
+async function decodeExactFile(file){
+  const detector=await getPolyfillDetector();
+  const img=await imageFromFileExact(file);
+  const results=await detector.detect(img);
+  for(const r of (results||[])){
+    const candidate=validJan(r?.rawValue||'');
+    if(candidate)return candidate;
+  }
   return null;
 }
 
-async function decodeBarcodeBlob(qr,blob){try{return await qr.scanFile(blob,false)}catch(_){return null}}
+async function decodeCanvasWithPolyfill(canvas){
+  try{
+    const detector=await getPolyfillDetector();
+    const results=await detector.detect(canvas);
+    for(const r of (results||[])){
+      const candidate=validJan(r?.rawValue||'');
+      if(candidate)return candidate;
+    }
+  }catch(_){ }
+  return null;
+}
+
+async function decodeDirectZbarCanvas(canvas){
+  try{
+    if(!window.zbarWasm || typeof window.zbarWasm.scanImageData!=='function')return null;
+    const ctx=canvas.getContext('2d',{willReadFrequently:true});
+    const symbols=await window.zbarWasm.scanImageData(ctx.getImageData(0,0,canvas.width,canvas.height));
+    for(const z of (symbols||[])){
+      let raw='';
+      try{raw=z.decode('utf-8')}catch(_){try{raw=z.decode()}catch(__){}}
+      const candidate=validJan(raw);
+      if(candidate)return candidate;
+    }
+  }catch(_){ }
+  return null;
+}
+
+function cropCanvas(base,x,y,w,h,scale=2){
+ const c=document.createElement('canvas');
+ c.width=Math.min(3600,Math.max(1,Math.round(base.width*w*scale)));
+ c.height=Math.min(3000,Math.max(1,Math.round(base.height*h*scale)));
+ const ctx=c.getContext('2d',{willReadFrequently:true});ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+ ctx.drawImage(base,Math.round(base.width*x),Math.round(base.height*y),Math.round(base.width*w),Math.round(base.height*h),0,0,c.width,c.height);
+ return c;
+}
+
+function processCanvas(src,mode){
+ const c=document.createElement('canvas');c.width=src.width;c.height=src.height;
+ const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(src,0,0);
+ const img=ctx.getImageData(0,0,c.width,c.height),d=img.data;
+ if(mode==='gray'||mode==='contrast'||mode==='threshold'){
+   for(let i=0;i<d.length;i+=4){let y=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
+     if(mode==='contrast')y=Math.max(0,Math.min(255,(y-128)*2.15+128));
+     if(mode==='threshold')y=y>155?255:0;
+     d[i]=d[i+1]=d[i+2]=y;
+   }
+ }else if(mode==='sharpen'){
+   const copy=new Uint8ClampedArray(d),w=c.width,h=c.height;
+   for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){
+     const i=(y*w+x)*4;
+     for(let ch=0;ch<3;ch++)d[i+ch]=Math.max(0,Math.min(255,5*copy[i+ch]-copy[i-4+ch]-copy[i+4+ch]-copy[i-w*4+ch]-copy[i+w*4+ch]));
+   }
+ }
+ ctx.putImageData(img,0,0);return c;
+}
+
+async function makeBarcodeCanvases(file){
+ const base=await imageToCanvas(file);
+ // 1) Original full image is always first.
+ const variants=[base];
+ // 2) Wide crops. The user's test photo has the barcode around the middle-lower area,
+ // but these cover top/middle/bottom without assuming a fixed package layout.
+ variants.push(cropCanvas(base,0.00,0.05,1.00,0.90,2.0));
+ variants.push(cropCanvas(base,0.00,0.20,1.00,0.55,2.5));
+ variants.push(cropCanvas(base,0.00,0.35,1.00,0.50,2.5));
+ variants.push(cropCanvas(base,0.10,0.25,0.80,0.55,2.8));
+ // 3) Grayscale/contrast/threshold/sharpen on the strongest candidates.
+ for(const src of [base,variants[2],variants[3],variants[4]]){
+   variants.push(processCanvas(src,'gray'));
+   variants.push(processCanvas(src,'contrast'));
+   variants.push(processCanvas(src,'threshold'));
+   variants.push(processCanvas(src,'sharpen'));
+ }
+ return variants;
+}
+
 
 async function scanBarcodePhoto(e){
- const file=e.target.files?.[0];if(!file)return;
- const st=$('lookupStatus');st.style.display='block';st.innerHTML='<b>📸 JANを高精度解析中…</b><div class="hint">新しい解析エンジン＋画像補正で確認しています</div>';
- try{
-   // PDCA priority: use ZBar/WASM first because it scans still images natively and supports EAN/UPC.
-   let jan=await decodeWithZbar(file);
-   if(!jan){
-     const blobs=await makeBarcodeVariants(file);
-     // ZBar again on processed images.
-     for(const blob of blobs){jan=await decodeWithZbar(blob);if(jan)break;}
-     // Final fallback: existing html5-qrcode decoder.
-     if(!jan){
-       const qr=new Html5Qrcode('reader_tmp',{verbose:false,formatsToSupport:[Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.UPC_A,Html5QrcodeSupportedFormats.UPC_E]});
-       try{for(const blob of blobs){const result=await decodeBarcodeBlob(qr,blob);const candidate=validJan(result);if(candidate){jan=candidate;break;}}}finally{try{await qr.clear()}catch(_){} }
-     }
-   }
-   if(!jan)throw new Error('JAN候補を取得できませんでした');
-   $('jan').value=jan;navigator.vibrate?.(100);await lookupProductByJan(jan);
- }catch(err){
-   st.innerHTML='<b>⚠️ JANを読み取れませんでした</b><div class="hint">バーコードをなるべく大きく写して、ピントが合った写真を使ってください。</div>';
- }finally{e.target.value='';}
+  const file=e.target.files?.[0];
+  if(!file)return;
+  const st=$('lookupStatus');
+  st.style.display='block';
+  st.innerHTML='<b>📸 JANを高精度解析中…</b><div class="hint">元画像をそのまま解析しています</div>';
+  try{
+    let jan=null;
+
+    // PDCA 1: EXACT same path as the standalone test that succeeded on iPhone:
+    // File -> HTMLImageElement -> BarcodeDetectorPolyfill.detect(img)
+    try{ jan=await decodeExactFile(file); }catch(_){ }
+
+    // PDCA 2: Load the exact file into an image, then draw at natural resolution.
+    if(!jan){
+      try{
+        const img=await imageFromFileExact(file);
+        const c=document.createElement('canvas');
+        c.width=img.naturalWidth||img.width;c.height=img.naturalHeight||img.height;
+        const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0);
+        jan=await decodeCanvasWithPolyfill(c);
+        if(!jan) jan=await decodeDirectZbarCanvas(c);
+      }catch(_){ }
+    }
+
+    // PDCA 3: Focused crops, but preserve enough quiet zone around the barcode.
+    if(!jan){
+      try{
+        const canvases=await makeBarcodeCanvases(file);
+        for(const c of canvases){
+          jan=await decodeCanvasWithPolyfill(c);
+          if(jan)break;
+        }
+      }catch(_){ }
+    }
+
+    // PDCA 4: Direct ZBar ImageData path on the same canvases.
+    if(!jan){
+      try{
+        const canvases=await makeBarcodeCanvases(file);
+        for(const c of canvases){
+          jan=await decodeDirectZbarCanvas(c);
+          if(jan)break;
+        }
+      }catch(_){ }
+    }
+
+    // PDCA 5: Existing html5-qrcode fallback.
+    if(!jan){
+      try{
+        const blobs=await makeBarcodeVariants(file);
+        const qr=new Html5Qrcode('reader_tmp',{verbose:false,formatsToSupport:[Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.UPC_A,Html5QrcodeSupportedFormats.UPC_E]});
+        try{
+          for(const blob of blobs){
+            try{const result=await qr.scanFile(blob,false);const candidate=validJan(result);if(candidate){jan=candidate;break;}}catch(_){ }
+          }
+        }finally{try{await qr.clear()}catch(_){} }
+      }catch(_){ }
+    }
+
+    if(!jan)throw new Error('JAN候補を取得できませんでした');
+    $('jan').value=jan;
+    navigator.vibrate?.(100);
+    st.innerHTML='<b>✅ JANを読み取りました</b><div style="font-size:22px;font-weight:800;margin-top:6px;letter-spacing:.04em">'+esc(jan)+'</div><div class="hint">商品情報を検索中…</div>';
+    await lookupProductByJan(jan);
+  }catch(err){
+    st.innerHTML='<b>⚠️ JANを読み取れませんでした</b><div class="hint">この写真でも読めない場合は、読み取りエンジンの状態を再確認します。バーコード部分をできるだけ大きく写す必要はありません。</div>';
+  }finally{e.target.value='';}
 }
 async function lookupProductByJan(jan){const st=$('lookupStatus');st.style.display='block';st.innerHTML='<b>🔎 商品情報を検索中…</b><div class="hint">JAN：'+esc(jan)+'</div>';let found=false;let lastError='';
   // Source 1: UPCitemdb free trial API (100 combined requests/day, no key required)
